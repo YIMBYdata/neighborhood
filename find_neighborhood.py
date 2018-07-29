@@ -43,7 +43,7 @@ class HouseNumRange:
     return self._house_num_low <= number and number <= self._house_num_hi
 
 
-def load_neighborhood_data(data_url):
+def _load_neighborhood_data(data_url):
   """
   Loads the data file into a list of lines. data_url can be local or on the web.
   If it's on the web, we use the Zapier-provided requests library to fetch it.
@@ -64,7 +64,7 @@ def load_neighborhood_data(data_url):
       return file(data_url).readlines()
 
 
-def find_candidates(neighborhood_data, street_name, street_type):
+def _find_candidates(neighborhood_data, street_name, street_type):
   """
   Given the loaded data and the input street name/type, finds HouseNumRanges
   that are relevant. We use some heuristics in the face of imperfect data.
@@ -92,9 +92,9 @@ def find_candidates(neighborhood_data, street_name, street_type):
 # Normalize the street type.
 STREET_TYPES = {
   'st': 'st',
-  'street': 'street',
+  'street': 'st',
   'dr': 'dr',
-  'drive': 'drive',
+  'drive': 'dr',
   'blvd': 'blvd',
   'ave': 'ave',
   'avenue': 'ave',
@@ -130,9 +130,12 @@ def find_neighborhood(data_url, street_address):
   """
   Parses the address, loads the data, and finds the neighborhood(s) that match.
   """
+  street_address = street_address.strip()
+  if not street_address:
+    return None
   street_number, street_name, street_type = parse_street_address(street_address)
-  neighborhood_data = load_neighborhood_data(data_url)
-  candidates = find_candidates(neighborhood_data, street_name, street_type)
+  neighborhood_data = _load_neighborhood_data(data_url)
+  candidates = _find_candidates(neighborhood_data, street_name, street_type)
   matches = set()
   for house_num_range, neighborhood in candidates:
     if house_num_range.Matches(street_number):
