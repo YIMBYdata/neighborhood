@@ -1,7 +1,7 @@
 # neighborhood
 Script for turning an SF street address to and SF neighborhood. Primarily intended for use in YIMBY Action Zapier.
 
-To regenerate the data, download the Street Data Extract" data set
+To regenerate the data, download the ["Street Data Extract" data set]
 (https://sfelections.org/tools/election_data/dataset.php?ATAB=d1970-01-01) and
 run:
 
