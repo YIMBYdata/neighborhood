@@ -21,76 +21,8 @@ import sys
 import zlib
 
 
-class HouseNumRange:
-  """
-  The data file contains house number ranges defined by a side code, range
-  low (inclusive) and range high (inclusive). The side code can be E for even,
-  O for odd, A for all (no number range provided), or B for both. If the street
-  number is withing [lo, hi] and is on the appropriate side of street, it
-  matches.
-  """
-  def __init__(self, row):
-    self._side_code = row["SideCode"]
-    self._house_num_low = int(row["HouseNumLo"])
-    self._house_num_hi = int(row["HouseNumHi"])
-
-  def Matches(self, number):
-    if ((self._side_code == 'E' and number % 2 == 1) or
-        (self._side_code == 'O' and number % 2 == 0)):
-      return False
-    if self._side_code == 'A':
-      return True
-    return self._house_num_low <= number and number <= self._house_num_hi
-
-
-def _load_neighborhood_data(data_url):
-  """
-  Loads the data file into a list of lines. data_url can be local or on the web.
-  If it's on the web, we use the Zapier-provided requests library to fetch it.
-  Supports gzipped files.
-  """
-  if data_url.startswith("http"):
-    response = requests.get(data_url)
-    response.raise_for_status()
-    if data_url.endswith(".gz"):
-      text = zlib.decompress(response.text)
-    else:
-      text = response.text
-    return text.splitlines()
-  else:
-    if data_url.endswith(".gz"):
-      return gzip.open(data_url).readlines()
-    else:
-      return file(data_url).readlines()
-
-
-def _find_candidates(neighborhood_data, street_name, street_type):
-  """
-  Given the loaded data and the input street name/type, finds HouseNumRanges
-  that are relevant. We use some heuristics in the face of imperfect data.
-  If the street name and type match the record, that's the best match. If only
-  the street name matches, that second. If the input street name has a space in
-  it and the record's street name is a prefix, that's third. The last of these
-  corrects for something like "123 Main Suite 100" which will be parsed to
-  123, Main Suite, ''.
-  """
-  has_space = street_name.find(" ")
-  tier1, tier2, tier3 = [], [], []
-  reader = csv.DictReader(neighborhood_data, delimiter='\t')
-  for row in reader:
-    row_street_name = row["StreetName"]
-    if street_name == row_street_name:
-      if street_type == row["StreetType"]:
-        tier1.append((HouseNumRange(row), row["Neighborhood"]))
-      else:
-        tier2.append((HouseNumRange(row), row["Neighborhood"]))
-    elif has_space and street_name.startswith(row_street_name):
-      tier3.append((HouseNumRange(row), row["Neighborhood"]))
-  return tier1 if tier1 else tier2 if tier2 else tier3
-
-
 # Normalize the street type.
-STREET_TYPES = {
+_STREET_TYPES = {
   'st': 'st',
   'street': 'st',
   'dr': 'dr',
@@ -118,7 +50,7 @@ def parse_street_address(street_address):
   if len(tokens) > 1 and any(c in '0123456789' for c in tokens[-1]):
     tokens.pop()
   # Parse the street type
-  street_type = STREET_TYPES.get(tokens[-1].lower(), '')
+  street_type = _STREET_TYPES.get(tokens[-1].lower(), '')
   if street_type:
     tokens.pop()
   # Street is what's left.
@@ -126,35 +58,110 @@ def parse_street_address(street_address):
   return (int(street_number), street_name, street_type)
 
 
-def find_neighborhood(data_url, street_address):
+class HouseNumRange(object):
   """
-  Parses the address, loads the data, and finds the neighborhood(s) that match.
+  The data file contains house number ranges defined by a side code, range
+  low (inclusive) and range high (inclusive). The side code can be E for even,
+  O for odd, A for all (no number range provided), or B for both. If the street
+  number is withing [lo, hi] and is on the appropriate side of street, it
+  matches.
   """
-  street_address = street_address.strip()
-  if not street_address:
-    return None
-  street_number, street_name, street_type = parse_street_address(street_address)
-  neighborhood_data = _load_neighborhood_data(data_url)
-  candidates = _find_candidates(neighborhood_data, street_name, street_type)
-  matches = set()
-  for house_num_range, neighborhood in candidates:
-    if house_num_range.Matches(street_number):
-      matches.add(neighborhood)
-  if not matches:
-    return None
-  if len(matches) == 1:
-    return matches.pop()
-  return "Multiple matches: " + ", ".join(matches)
+  def __init__(
+      self, side_code, house_num_low, house_num_high, district, neighborhood):
+    self._side_code = side_code
+    self._house_num_low = house_num_low
+    self._house_num_high = house_num_high
+    self.district = district
+    self.neighborhood = neighborhood
+
+  def Matches(self, number):
+    if ((self._side_code == 'E' and number % 2 == 1) or
+        (self._side_code == 'O' and number % 2 == 0)):
+      return False
+    if self._side_code == 'A':
+      return True
+    return self._house_num_low <= number and number <= self._house_num_high
 
 
-# Test on the command line.
+class StreetRecord(object):
+
+  def __init__(self, street_name, street_type):
+    self.street_name = street_name
+    self.street_type = street_type
+    self.house_num_ranges = []
+
+
+class StreetDatabase(object):
+
+  def __init__(self, data_filename):
+    self._records = self._parse(self._read(data_filename))
+
+  def find_neighborhood(self, street_address):
+    street_address = street_address.strip()
+    if not street_address:
+      return None
+    street_number, street_name, street_type = parse_street_address(street_address)
+    candidates = self._find_candidates(street_name, street_type)
+    matches = set()
+    for house_num_range in candidates:
+      if house_num_range.Matches(street_number):
+        matches.add(house_num_range.neighborhood)
+    if not matches:
+      return None
+    if len(matches) == 1:
+      return matches.pop()
+    return "Multiple matches: " + ", ".join(matches)
+    
+  def _read(self, data_filename):
+    if data_filename.endswith(".gz"):
+      return gzip.open(data_filename).readlines()
+    else:
+      return file(data_filename).readlines()
+
+  def _parse(self, data):
+    parsed_data = {}
+    reader = csv.DictReader(data, delimiter='\t')
+    for row in reader:
+      key = (row["StreetName"], row["StreetType"])
+      record = parsed_data.get(key)
+      if not record:
+        record = parsed_data[key] = StreetRecord(*key)
+      record.house_num_ranges.append(HouseNumRange(
+          row["SideCode"], int(row["HouseNumLo"]), int(row["HouseNumHi"]),
+          row["District"], row["Neighborhood"]))
+    return parsed_data.values()
+
+  def _find_candidates(self, street_name, street_type):
+    """
+    Given the loaded data and the input street name/type, finds HouseNumRanges
+    that are relevant. We use some heuristics in the face of imperfect data.
+    If the street name and type match the record, that's the best match. If only
+    the street name matches, that second. If the input street name has a space in
+    it and the record's street name is a prefix, that's third. The last of these
+    corrects for something like "123 Main Suite 100" which will be parsed to
+    123, Main Suite, ''.
+    """
+    has_space = street_name.find(" ")
+    tier2, tier3 = [], []
+    for record in self._records:
+      if street_name == record.street_name:
+        if street_type == record.street_type:
+          return record.house_num_ranges  # Exact match
+        else:
+          tier2.extend(record.house_num_ranges)
+      elif has_space and street_name.startswith(record.street_name):
+        tier3.extend(record.house_num_ranges)
+    return tier2 if tier2 else tier3
+
+
+def find_neighborhood(data_filename, street_address):
+  """Testable method."""
+  db = StreetDatabase(data_filename)
+  return db.find_neighborhood(street_address)
+
+
+# Run on the command line.
 # ./find_neighborhood.py neighborhood_data.tsv "123 Main St" 
 if __name__ == '__main__':
   assert len(sys.argv) == 3
   print find_neighborhood(sys.argv[1], sys.argv[2])
-else:
-  # Execute in Zapier. Fix the variable and uncomment the return value.
-  DATA_URL = "http://path/to/neighborhood_data.tsv.gz"
-  INPUT_FIELD = "address"
-  OUTPUT_FIELD = "neighborhood"
-  # return {OUTPUT_FIELD: find_neighborhood(DATA_URL, input_data[INPUT_FIELD])}

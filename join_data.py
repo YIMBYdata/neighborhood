@@ -24,7 +24,7 @@ def join_election_data(election_filename, precinct_filename):
     reader = csv.reader(precinct_fd, delimiter='\t')
     for precinct, district, neighborhood in reader:
       assert precinct not in precinct_data
-      precinct_data[precinct] = neighborhood
+      precinct_data[precinct] = district, neighborhood
 
   # Read in the elections data and perform a join, filtering to only keep
   # the fields that find_neighborhood.py needs and normalizing the data to
@@ -36,16 +36,17 @@ def join_election_data(election_filename, precinct_filename):
       street_name = row["StreetName"].lower()
       if street_name.startswith("@"):
         continue  # Filter out some weird records.
+      district, neighborhood = precinct_data[row["PrecinctID"]]
       output.append([
         street_name, row["StreetType"].lower(), row["SideCode"].upper(),
-        row["HouseNumLo"], row["HouseNumHi"], precinct_data[row["PrecinctID"]]
+        row["HouseNumLo"], row["HouseNumHi"], district, neighborhood
       ])
   
   # Sort the output so it's easier for a human to parse.
   writer = csv.writer(sys.stdout, delimiter='\t')
   writer.writerow([
     "StreetName", "StreetType", "SideCode", "HouseNumLo", "HouseNumHi",
-    "Neighborhood"
+    "District", "Neighborhood"
   ])
   for row in sorted(output):
     writer.writerow(row)
