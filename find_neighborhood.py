@@ -97,7 +97,7 @@ class StreetDatabase(object):
       street_number, street_name, street_type = parse_street_address(
           street_address.strip())
     except ValueError:
-      return ""
+      return ()
     street_data = self._parsed_data.get(street_name, {})
     ranges = street_data.get(street_type)
     if not ranges:
