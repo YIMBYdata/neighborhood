@@ -35,7 +35,7 @@ def parse_street_address(street_address):
     raise ValueError(str(parsed))
   street_number = street_number.rstrip(string.ascii_letters)
   return (int(street_number),
-          parsed["StreetName"].lower(),
+          parsed.get("StreetName", "").lower(),
           parsed.get("StreetNamePostType", "").lower())
 
 
