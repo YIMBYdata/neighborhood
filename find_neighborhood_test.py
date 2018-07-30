@@ -8,7 +8,7 @@ class StreetParseTest(unittest.TestCase):
 
   def assertStreetParsesTo(
       self, street_address, street_number, street_name, street_type):
-    self.assertEquals(
+    self.assertEqual(
       find_neighborhood.parse_street_address(street_address),
       (street_number, street_name, street_type))
 
@@ -44,7 +44,7 @@ class StreetParseTest(unittest.TestCase):
 class FindNeighborhoodTest(unittest.TestCase):
 
   def assertNeighborhood(self, street_address, neighborhood):
-    self.assertEquals(
+    self.assertEqual(
       find_neighborhood.find_neighborhood(
         "data/neighborhood_data.tsv.gz", street_address),
       neighborhood)
@@ -66,7 +66,7 @@ class FindNeighborhoodTest(unittest.TestCase):
   def test_ambiguous_address(self):
     self.assertNeighborhood(
         "1 10th Apt 3",
-        "Multiple matches: South of Market, Inner Richmond")
+        "Multiple matches: Inner Richmond, South of Market")
 
   def test_no_match(self):
     self.assertNeighborhood("1 asdf123 st", None)

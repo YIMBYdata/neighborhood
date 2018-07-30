@@ -18,7 +18,6 @@ This script can be run in Zapier by fixing the code at the very bottom.
 import csv
 import gzip
 import sys
-import zlib
 
 
 # Normalize the street type.
@@ -110,13 +109,12 @@ class StreetDatabase(object):
       return None
     if len(matches) == 1:
       return matches.pop()
-    return "Multiple matches: " + ", ".join(matches)
+    return "Multiple matches: " + ", ".join(sorted(matches))
     
   def _read(self, data_filename):
-    if data_filename.endswith(".gz"):
-      return gzip.open(data_filename).readlines()
-    else:
-      return file(data_filename).readlines()
+    open_file = gzip.open if data_filename.endswith(".gz") else open
+    with open_file(data_filename, mode="rt") as f:
+      return f.readlines()
 
   def _parse(self, data):
     parsed_data = {}
@@ -164,4 +162,4 @@ def find_neighborhood(data_filename, street_address):
 # ./find_neighborhood.py neighborhood_data.tsv "123 Main St" 
 if __name__ == '__main__':
   assert len(sys.argv) == 3
-  print find_neighborhood(sys.argv[1], sys.argv[2])
+  print(find_neighborhood(sys.argv[1], sys.argv[2]))
