@@ -17,44 +17,26 @@ This script can be run in Zapier by fixing the code at the very bottom.
 
 import csv
 import gzip
+import scourgify
 import string
 import sys
-
-
-# Normalize the street type.
-_STREET_TYPES = {
-  'st': 'st',
-  'street': 'st',
-  'dr': 'dr',
-  'drive': 'dr',
-  'blvd': 'blvd',
-  'ave': 'ave',
-  'avenue': 'ave',
-  'way': 'way',
-  'terrace': 'ter',
-  'ter': 'ter',
-  'park': 'park'
-}
+import usaddress
 
 
 def parse_street_address(street_address):
   """Parses a raw street address to (number, name, type)."""
-  tokens = street_address.split(" ")
-  # Consume and parse the street number.
-  street_number = tokens.pop(0).lower()
+  try:
+    normalized = scourgify.normalize_address_record(street_address)
+  except scourgify.exceptions.UnParseableAddressError as e:
+    raise ValueError(e)
+  parsed, _ = usaddress.tag(normalized["address_line_1"])
+  street_number = parsed.get("AddressNumber")
+  if not street_number:
+    raise ValueError(str(parsed))
   street_number = street_number.rstrip(string.ascii_letters)
-  # Strip extra junk off the end.
-  if len(tokens) > 1 and len(tokens[-1]) == 1:
-    tokens.pop()
-  if len(tokens) > 1 and any(c in '0123456789' for c in tokens[-1]):
-    tokens.pop()
-  # Parse the street type
-  street_type = _STREET_TYPES.get(tokens[-1].lower(), '')
-  if street_type:
-    tokens.pop()
-  # Street is what's left.
-  street_name = " ".join(tokens).lower()
-  return (int(street_number), street_name, street_type)
+  return (int(street_number),
+          parsed["StreetName"].lower(),
+          parsed.get("StreetNamePostType", "").lower())
 
 
 class HouseNumRange(object):
@@ -82,34 +64,23 @@ class HouseNumRange(object):
     return self._house_num_low <= number and number <= self._house_num_high
 
 
-class StreetRecord(object):
-
-  def __init__(self, street_name, street_type):
-    self.street_name = street_name
-    self.street_type = street_type
-    self.house_num_ranges = []
-
-
 class StreetDatabase(object):
 
   def __init__(self, data_filename):
-    self._records = self._parse(self._read(data_filename))
+    self._parsed_data = self._parse(self._read(data_filename))
 
   def find_neighborhood(self, street_address):
     street_address = street_address.strip()
-    if not street_address:
-      return None
-    street_number, street_name, street_type = parse_street_address(street_address)
+    try:
+      street_number, street_name, street_type = parse_street_address(street_address)
+    except ValueError:
+      return ""
     candidates = self._find_candidates(street_name, street_type)
     matches = set()
     for house_num_range in candidates:
       if house_num_range.Matches(street_number):
         matches.add(house_num_range.neighborhood)
-    if not matches:
-      return None
-    if len(matches) == 1:
-      return matches.pop()
-    return "Multiple matches: " + ", ".join(sorted(matches))
+    return ",".join(sorted(matches))
     
   def _read(self, data_filename):
     open_file = gzip.open if data_filename.endswith(".gz") else open
@@ -120,14 +91,11 @@ class StreetDatabase(object):
     parsed_data = {}
     reader = csv.DictReader(data, delimiter='\t')
     for row in reader:
-      key = (row["StreetName"], row["StreetType"])
-      record = parsed_data.get(key)
-      if not record:
-        record = parsed_data[key] = StreetRecord(*key)
-      record.house_num_ranges.append(HouseNumRange(
+      ranges = parsed_data.setdefault(row["StreetName"], {}).setdefault(row["StreetType"], [])
+      ranges.append(HouseNumRange(
           row["SideCode"], int(row["HouseNumLo"]), int(row["HouseNumHi"]),
           row["District"], row["Neighborhood"]))
-    return parsed_data.values()
+    return parsed_data
 
   def _find_candidates(self, street_name, street_type):
     """
@@ -139,17 +107,15 @@ class StreetDatabase(object):
     corrects for something like "123 Main Suite 100" which will be parsed to
     123, Main Suite, ''.
     """
-    has_space = street_name.find(" ")
-    tier2, tier3 = [], []
-    for record in self._records:
-      if street_name == record.street_name:
-        if street_type == record.street_type:
-          return record.house_num_ranges  # Exact match
-        else:
-          tier2.extend(record.house_num_ranges)
-      elif has_space and street_name.startswith(record.street_name):
-        tier3.extend(record.house_num_ranges)
-    return tier2 if tier2 else tier3
+    street_type_map = self._parsed_data.get(street_name)
+    if not street_type_map:
+      return ()
+    street_ranges = street_type_map.get(street_type)
+    if not street_ranges:
+      street_ranges = []
+      for x in street_type_map.values():
+        street_ranges.extend(x)
+    return street_ranges
 
 
 def find_neighborhood(data_filename, street_address):

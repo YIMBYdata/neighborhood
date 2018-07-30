@@ -25,9 +25,7 @@ class StreetParseTest(unittest.TestCase):
     self.assertStreetParsesTo("123 Main Street", 123, "main", "st")
 
   def test_apt_number_parse_with_suite(self):
-    self.assertStreetParsesTo("123 Main St Suite101", 123, "main", "st")
-    # Case not handled well, covered by tier3 prefix match
-    self.assertStreetParsesTo("123 Main St Suite 101", 123, "main st suite", "")
+    self.assertStreetParsesTo("123 Main St Suite 101", 123, "main", "st")
 
   def test_street_type_missing(self):
     self.assertStreetParsesTo("123 Main", 123, "main", "")
@@ -52,6 +50,10 @@ class FindNeighborhoodTest(unittest.TestCase):
   def test_street_match(self):
     self.assertNeighborhood("123 Main St", "Financial District/South Beach") 
 
+  def test_full_address(self):
+    self.assertNeighborhood("123 Main St, San Francisco, CA 94105",
+                            "Financial District/South Beach") 
+
   def test_street_type_missing(self):
     self.assertNeighborhood("123 Main", "Financial District/South Beach")
 
@@ -63,16 +65,21 @@ class FindNeighborhoodTest(unittest.TestCase):
     self.assertNeighborhood("123 Main Suite 100",
                             "Financial District/South Beach")
 
+  def test_unparseable_address(self):
+    self.assertNeighborhood("1 10th", "")
+    self.assertNeighborhood("1 10th Apt 3", "")
+    self.assertNeighborhood("b123 Main St", "")
+
   def test_ambiguous_address(self):
     self.assertNeighborhood(
-        "1 10th Apt 3",
-        "Multiple matches: Inner Richmond, South of Market")
+        "10 10th Apt 3",
+        "Inner Richmond,South of Market")
 
   def test_no_match(self):
-    self.assertNeighborhood("1 asdf123 st", None)
+    self.assertNeighborhood("1 asdf123 st", "")
   
   def test_empty_input(self):
-    self.assertNeighborhood(" ", None)
+    self.assertNeighborhood(" ", "")
 
 
 if __name__ == '__main__':
