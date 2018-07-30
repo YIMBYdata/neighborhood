@@ -17,6 +17,7 @@ This script can be run in Zapier by fixing the code at the very bottom.
 
 import csv
 import gzip
+import string
 import sys
 
 
@@ -41,8 +42,7 @@ def parse_street_address(street_address):
   tokens = street_address.split(" ")
   # Consume and parse the street number.
   street_number = tokens.pop(0).lower()
-  if any(street_number.endswith(x) for x in "abc"):
-    street_number = street_number[:-1]
+  street_number = street_number.rstrip(string.ascii_letters)
   # Strip extra junk off the end.
   if len(tokens) > 1 and len(tokens[-1]) == 1:
     tokens.pop()
