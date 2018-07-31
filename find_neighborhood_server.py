@@ -12,6 +12,11 @@ def _load_static_data(data_filename):
   db = find_neighborhood.StreetDatabase(data_filename)
 
 
+@app.route("/sf/district")
+def district():
+  return db.find_district(flask.request.args.get("address"))
+
+
 @app.route("/sf/neighborhood")
 def neighborhood():
   return db.find_neighborhood(flask.request.args.get("address"))

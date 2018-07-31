@@ -68,6 +68,10 @@ class StreetDatabase(object):
   def __init__(self, data_filename):
     self._parsed_data = self._parse(self._read(data_filename))
 
+  def find_district(self, street_address):
+    matches = self._find_matches(street_address)
+    return ",".join(sorted(set([m.district for m in matches])))
+
   def find_neighborhood(self, street_address):
     matches = self._find_matches(street_address)
     return ",".join(sorted(set([m.neighborhood for m in matches])))
