@@ -85,6 +85,7 @@ class FindNeighborhoodTest(unittest.TestCase):
   
   def test_empty_input(self):
     self.assertResults(" ", "", "")
+    self.assertResults(None, "", "")
 
 
 if __name__ == '__main__':
