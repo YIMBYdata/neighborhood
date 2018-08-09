@@ -24,6 +24,8 @@ import usaddress
 
 def parse_street_address(street_address):
   """Parses a raw street address to (number, name, type)."""
+  if not street_address:
+    raise ValueError("Empty address")
   try:
     normalized = scourgify.normalize_address_record(street_address)
   except scourgify.exceptions.UnParseableAddressError as e:
@@ -99,7 +101,7 @@ class StreetDatabase(object):
     """
     try:
       street_number, street_name, street_type = parse_street_address(
-          street_address.strip())
+          street_address)
     except ValueError:
       return ()
     street_data = self._parsed_data.get(street_name, {})

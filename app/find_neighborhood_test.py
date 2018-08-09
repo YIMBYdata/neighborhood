@@ -38,6 +38,12 @@ class StreetParseTest(unittest.TestCase):
     with self.assertRaises(ValueError):
       find_neighborhood.parse_street_address("b123 Main St")
 
+  def test_empty_error(self):
+    with self.assertRaises(ValueError):
+      find_neighborhood.parse_street_address("")
+    with self.assertRaises(ValueError):
+      find_neighborhood.parse_street_address(None)
+
 
 class FindNeighborhoodTest(unittest.TestCase):
 
@@ -54,6 +60,9 @@ class FindNeighborhoodTest(unittest.TestCase):
 
   def test_street_match(self):
     self.assertResults("123 Main St", "6", "Financial District/South Beach")  
+
+  def test_padded_street_match(self):
+    self.assertResults("   123 Main St   ", "6", "Financial District/South Beach")  
 
   def test_full_address(self):
     self.assertResults("123 Main St, San Francisco, CA 94105",
