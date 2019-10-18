@@ -118,7 +118,7 @@ def find_neighborhood(data_filename, street_address):
 
 
 # Run on the command line.
-# ./app/find_neighborhood.py data/neighborhood_data.tsv "123 Main St" 
+# ./app/find_neighborhood.py data/neighborhood_data.tsv.gz "123 Main St" 
 if __name__ == '__main__':
   assert len(sys.argv) == 3
   print(find_neighborhood(sys.argv[1], sys.argv[2]))
