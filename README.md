@@ -1,4 +1,5 @@
 # neighborhood
+
 Server and CLI that can turn an SF street address into an SF neighborhood. 
 
 To regenerate the data, download the ["Street Data Extract" data set](https://sfelections.org/tools/election_data/dataset.php?ATAB=d1970-01-01) and
@@ -18,7 +19,7 @@ $ ./app/find_neighborhood.py data/neighborhood_data.tsv.gz "123 Main St"
 This can be run as a server via:
 
 ```bash
-$ ./app/find_neighborhood_server.py data/neighborhood_data.tsv.gz 
+$ ./app/find_neighborhood_server.py data/neighborhood_data.tsv.gz
 ```
 
 And accessed via:
