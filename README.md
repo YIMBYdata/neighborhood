@@ -7,30 +7,29 @@ run:
 
 ```bash
 $ cd data
-$ ./join_data.py elections-data.txt precincts.tsv | gzip > neighborhood_data.tsv.gz
+$ ./join_data.py elections-data.txt precincts.tsv | gzip > ../app/data/neighborhood_data.tsv.gz
 ```
 
 This can be tested on the command line via:
 
 ```bash
-$ ./app/find_neighborhood.py data/neighborhood_data.tsv.gz "123 Main St"
+$ ./app/find_neighborhood.py "123 Main St"
 ```
 
 This can be run as a server via:
 
 ```bash
-$ ./app/find_neighborhood_server.py data/neighborhood_data.tsv.gz
+$ ./app/main.py
 ```
 
 And accessed via:
 
-```bash
-/sf/neighborhood?address=123+Main+St
-```
+http://localhost:8080/sf/neighborhood?address=123+Main+St
 
 This can be run as a Docker container:
 
 ```bash
 $ docker build -t neighborhood .
 $ docker run -p 80:80 neighborhood
+$ docker run --rm -it -p 8080:80 neighborhood
 ```
