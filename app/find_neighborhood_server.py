@@ -11,8 +11,9 @@ db = None
 def get_db():  
   global db
   if not db:
-    print(os.getcwd())
-    data_filename = os.environ['NEIGHBORHOOD_DATA_FILE']
+    dirname = os.path.dirname(__file__)
+    print(dirname)
+    data_filename = os.path.join(dirname, 'data/neighborhood_data.tsv.gz')
     print("Loading initial database: " + data_filename)
     db = find_neighborhood.StreetDatabase(data_filename)
   return db
@@ -29,6 +30,4 @@ def neighborhood():
 
 
 if __name__ == "__main__":
-  assert len(sys.argv) == 2
-  os.environ['NEIGHBORHOOD_DATA_FILE'] = sys.argv[1]
-  app.run(debug=True)
+  app.run(debug=True, port=os.environ.get('PORT', 8080))
