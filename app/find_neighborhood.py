@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 """
-Server or script that takes a data file produced by join_data.py and an address
+Script that takes a data file produced by join_data.py and an address
 (street number, name, and type) and produces the SF neighborhood that
 address is in.
 
@@ -13,7 +13,6 @@ HouseNumHi (see the HouseNumRange class).
 """
 
 import csv
-import flask
 import gzip
 import itertools
 import os
@@ -115,25 +114,7 @@ class StreetDatabase(object):
 db = StreetDatabase(
     os.path.join(os.path.dirname(__file__), 'data/neighborhood_data.tsv.gz'))
 
-app = flask.Flask(__name__)
-
-
-@app.route("/sf/district")
-def district():
-    return db.find_district(flask.request.args.get("address", ""))
-
-
-@app.route("/sf/neighborhood")
-def neighborhood():
-    return db.find_neighborhood(flask.request.args.get("address", ""))
-
-
-# Server:
-# ./app/find_neighborhood.py
-# Command line tool:
 # ./app/find_neighborhood.py "123 Main St"
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        app.run(debug=True, port=os.environ.get('PORT', 8080))
-    else:
-        print(db.find_neighborhood(sys.argv[1]))
+    assert len(sys.argv) == 2
+    print(db.find_neighborhood(sys.argv[1]))
