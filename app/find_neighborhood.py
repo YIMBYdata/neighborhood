@@ -39,7 +39,7 @@ def parse_street_address(street_address):
             parsed.get("StreetNamePostType", "").lower())
 
 
-class HouseNumRange(object):
+class HouseNumRange:
     """
     The data file contains house number ranges defined by a side code, range
     low (inclusive) and range high (inclusive). The side code can be E for even,
@@ -64,7 +64,7 @@ class HouseNumRange(object):
         return self._house_num_low <= number and number <= self._house_num_high
 
 
-class StreetDatabase(object):
+class StreetDatabase:
     def __init__(self, data_filename):
         self._parsed_data = self._parse(self._read(data_filename))
 
