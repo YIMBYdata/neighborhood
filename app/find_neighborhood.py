@@ -21,6 +21,15 @@ import string
 import sys
 import usaddress
 
+# CSV index constants
+_STREET_NAME = 0
+_STREET_TYPE = 1
+_SIDE_CODE = 2
+_HOUSE_NUM_LO = 3
+_HOUSE_NUM_HI = 4
+_DISTRICT = 5
+_NEIGHBORHOOD = 6
+
 
 def parse_street_address(street_address):
     """Parses a raw street address to (number, name, type)."""
@@ -83,14 +92,15 @@ class StreetDatabase:
 
     def _parse(self, data):
         parsed_data = {}
-        reader = csv.DictReader(data, delimiter='\t')
+        reader = csv.reader(data, delimiter='\t')
+        next(reader)
         for row in reader:
-            ranges = parsed_data.setdefault(row["StreetName"], {}).setdefault(
-                row["StreetType"], [])
+            ranges = parsed_data.setdefault(row[_STREET_NAME], {}).setdefault(
+                row[_STREET_TYPE], [])
             ranges.append(
-                HouseNumRange(row["SideCode"], int(row["HouseNumLo"]),
-                              int(row["HouseNumHi"]), row["District"],
-                              row["Neighborhood"]))
+                HouseNumRange(row[_SIDE_CODE], int(row[_HOUSE_NUM_LO]),
+                              int(row[_HOUSE_NUM_HI]), row[_DISTRICT],
+                              row[_NEIGHBORHOOD]))
         return parsed_data
 
     def _find_matches(self, street_address):
@@ -112,7 +122,7 @@ class StreetDatabase:
 
 
 db = StreetDatabase(
-    os.path.join(os.path.dirname(__file__), 'data/neighborhood_data.tsv.gz'))
+    os.path.join(os.path.dirname(__file__), 'data/neighborhood_data.tsv'))
 
 # ./app/find_neighborhood.py "123 Main St"
 if __name__ == '__main__':
