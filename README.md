@@ -13,13 +13,14 @@ $ ./join_data.py elections-data.txt precincts.tsv | gzip > ../app/data/neighborh
 This can be tested on the command line via:
 
 ```bash
+$ cd py
 $ ./app/find_neighborhood.py "123 Main St"
 ```
 
 This can be run as a server via:
 
 ```bash
-$ cd app
+$ cd py/app
 $ uvicorn main:app --reload
 ```
 
@@ -30,6 +31,7 @@ And accessed via:
 This can be run as a Docker container:
 
 ```bash
+$ cd py
 $ docker build -t neighborhood .
 $ docker run --rm -it -p 8080:80 neighborhood
 $ docker run -p 80:80 neighborhood
