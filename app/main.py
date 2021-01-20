@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-# Local debugging: uvicorn app/main:app --reload
 
 import os
 
