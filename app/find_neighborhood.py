@@ -77,13 +77,12 @@ class StreetDatabase:
     def __init__(self, data_filename):
         self._parsed_data = self._parse(self._read(data_filename))
 
-    def find_district(self, street_address):
+    def find(self, street_address):
         matches = self._find_matches(street_address)
-        return ",".join(sorted(set([m.district for m in matches])))
-
-    def find_neighborhood(self, street_address):
-        matches = self._find_matches(street_address)
-        return ",".join(sorted(set([m.neighborhood for m in matches])))
+        return {
+            "district": sorted(set([m.district for m in matches])),
+            "neighborhood": sorted(set([m.neighborhood for m in matches]))
+        }
 
     def _read(self, data_filename):
         open_file = gzip.open if data_filename.endswith(".gz") else open
@@ -127,4 +126,4 @@ db = StreetDatabase(
 # ./app/find_neighborhood.py "123 Main St"
 if __name__ == '__main__':
     assert len(sys.argv) == 2
-    print(db.find_neighborhood(sys.argv[1]))
+    print(db.find(sys.argv[1]))

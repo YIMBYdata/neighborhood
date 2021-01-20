@@ -50,9 +50,12 @@ class FindNeighborhoodTest(unittest.TestCase):
             "data/neighborhood_data.tsv.gz")
 
     def assertResults(self, street_address, district, neighborhood):
-        self.assertEqual(self._db.find_district(street_address), district)
-        self.assertEqual(self._db.find_neighborhood(street_address),
-                         neighborhood)
+        self.assertEqual(
+            self._db.find(street_address), {
+                "district": district.split(",") if district else [],
+                "neighborhood":
+                neighborhood.split(",") if neighborhood else []
+            })
 
     def test_street_match(self):
         self.assertResults("123 Main St", "6",
