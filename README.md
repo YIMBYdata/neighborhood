@@ -13,15 +13,13 @@ $ ./join_data.py elections-data.txt precincts.tsv | gzip > ../app/data/neighborh
 This can be tested on the command line via:
 
 ```bash
-$ cd py
 $ ./app/find_neighborhood.py "123 Main St"
 ```
 
 This can be run as a server via:
 
 ```bash
-$ cd py/app
-$ ./app/main.py
+$ ./app/find_neighborhood_server.py
 ```
 
 And accessed via:
