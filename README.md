@@ -21,18 +21,16 @@ This can be run as a server via:
 
 ```bash
 $ cd py/app
-$ uvicorn main:app --reload
+$ ./app/main.py
 ```
 
 And accessed via:
 
-<http://localhost:8000/sf?address=123+Main+St>
+<http://localhost:8080/sf?address=123+Main+St>
 
 This can be run as a Docker container:
 
 ```bash
-$ cd py
 $ docker build -t neighborhood .
-$ docker run --rm -it -p 8080:80 neighborhood
-$ docker run -p 80:80 neighborhood
+$ docker run --rm -it -e PORT=80 -p 8080:80 neighborhood
 ```

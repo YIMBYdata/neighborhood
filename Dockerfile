@@ -1,8 +1,3 @@
-# Run locally: 
-# $ $ docker run --rm -it -e PORT=80 -p 8080:80 neighborhood
-# or
-# $ ./app/main.py
-
 FROM python:3.8-slim
 
 WORKDIR /app
