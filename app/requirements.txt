@@ -1,5 +1,4 @@
-fastapi==0.63.0
+Flask==1.1.1
 gunicorn==20.0.4
 usaddress==0.5.10
 usaddress-scourgify==0.2.4
-uvicorn[standard]==0.13.3
