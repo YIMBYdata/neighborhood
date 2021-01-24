@@ -31,7 +31,7 @@ _DISTRICT = 5
 _NEIGHBORHOOD = 6
 
 
-def parse_street_address(street_address):
+def parse_street_address(street_address: str) -> tuple[int, str, str]:
     """Parses a raw street address to (number, name, type)."""
     if not street_address:
         raise ValueError("Empty address")
@@ -40,7 +40,7 @@ def parse_street_address(street_address):
     except scourgify.exceptions.UnParseableAddressError as e:
         raise ValueError(e)
     parsed, _ = usaddress.tag(normalized["address_line_1"])
-    street_number = parsed.get("AddressNumber")
+    street_number: str = parsed.get("AddressNumber")
     if not street_number:
         raise ValueError(str(parsed))
     street_number = street_number.rstrip(string.ascii_letters)
@@ -56,8 +56,8 @@ class HouseNumRange:
     number is withing [lo, hi] and is on the appropriate side of street, it
     matches.
     """
-    def __init__(self, side_code, house_num_low, house_num_high, district,
-                 neighborhood):
+    def __init__(self, side_code: str, house_num_low: int, house_num_high: int,
+                 district: str, neighborhood: str):
         self._side_code = side_code
         self._house_num_low = house_num_low
         self._house_num_high = house_num_high
@@ -74,22 +74,22 @@ class HouseNumRange:
 
 
 class StreetDatabase:
-    def __init__(self, data_filename):
+    def __init__(self, data_filename: str):
         self._parsed_data = self._parse(self._read(data_filename))
 
-    def find(self, street_address):
+    def find(self, street_address: str) -> dict[str, list[str]]:
         matches = self._find_matches(street_address)
         return {
             "district": sorted(set([m.district for m in matches])),
             "neighborhood": sorted(set([m.neighborhood for m in matches]))
         }
 
-    def _read(self, data_filename):
+    def _read(self, data_filename: str) -> list[str]:
         open_file = gzip.open if data_filename.endswith(".gz") else open
         with open_file(data_filename, mode="rt") as f:
             return f.readlines()
 
-    def _parse(self, data):
+    def _parse(self, data: list[str]) -> dict[str, dict[str, list[HouseNumRange]]]:
         parsed_data = {}
         reader = csv.reader(data, delimiter='\t')
         next(reader)
@@ -102,7 +102,7 @@ class StreetDatabase:
                               row[_NEIGHBORHOOD]))
         return parsed_data
 
-    def _find_matches(self, street_address):
+    def _find_matches(self, street_address: str) -> list[HouseNumRange]:
         """
         Given the loaded data and the input address, finds HouseNumRanges
         that match. If the street_type doesn't match for a given street, we'll fall
@@ -112,7 +112,7 @@ class StreetDatabase:
             street_number, street_name, street_type = parse_street_address(
                 street_address)
         except ValueError:
-            return ()
+            return []
         street_data = self._parsed_data.get(street_name, {})
         ranges = street_data.get(street_type)
         if not ranges:
