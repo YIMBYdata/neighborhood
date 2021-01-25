@@ -64,7 +64,7 @@ class HouseNumRange:
         self.district = district
         self.neighborhood = neighborhood
 
-    def Matches(self, number):
+    def Matches(self, number) -> bool:
         if ((self._side_code == 'E' and number % 2 == 1)
                 or (self._side_code == 'O' and number % 2 == 0)):
             return False
