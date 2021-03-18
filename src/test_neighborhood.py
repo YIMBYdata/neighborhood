@@ -48,8 +48,6 @@ def test_number_value_error():
 def test_empty_error():
     with pytest.raises(ValueError):
         neighborhood.parse_street_address("")
-    with pytest.raises(ValueError):
-        neighborhood.parse_street_address(None)
 
 
 def assert_find_results(street_address, districts, neighborhoods):
@@ -103,4 +101,4 @@ def test_no_match():
 
 def test_empty_input():
     assert_find_results(" ", "", "")
-    assert_find_results(None, "", "")
+    assert_find_results("", "", "")

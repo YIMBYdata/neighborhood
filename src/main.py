@@ -9,7 +9,7 @@ import neighborhood
 
 def handle_request(request):
     address = request.args.get("address", "")
-    data = neighborhood.db.find(address)
+    data = neighborhood.find(address)
     return json.dumps(data)
 
 
