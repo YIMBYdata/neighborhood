@@ -10,7 +10,7 @@ cd data
 ./join_data.py elections-data.txt precincts.tsv > ../src/data/neighborhood_data.tsv
 ```
 
-This can be tested on the command line via:
+This can be run on the command line via:
 
 ```bash
 ./src/find_neighborhood.py "123 Main St"
