@@ -4,5 +4,8 @@ set -ae
 
 APP_NAME="neighborhood"
 
-docker build -t $APP_NAME .
+cd src
+pack build $APP_NAME \
+    --env GOOGLE_FUNCTION_TARGET="handle_request" \
+    --builder gcr.io/buildpacks/builder:v1
 docker run --rm -it -p 8080:8080 -e PORT=8080 $APP_NAME

@@ -1,9 +1,0 @@
-.git*
-__pycache__
-*.md
-*.pyc
-*.pyo
-*.pyd
-.Python
-requirements-test.txt
-test*.py
