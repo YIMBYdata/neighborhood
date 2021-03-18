@@ -5,11 +5,13 @@ import unittest
 
 
 class StreetParseTest(unittest.TestCase):
-    def assertStreetParsesTo(self, street_address, street_number, street_name,
-                             street_type):
+    def assertStreetParsesTo(
+        self, street_address, street_number, street_name, street_type
+    ):
         self.assertEqual(
             find_neighborhood.parse_street_address(street_address),
-            (street_number, street_name, street_type))
+            (street_number, street_name, street_type),
+        )
 
     def test_basic_parse(self):
         self.assertStreetParsesTo("123 Main St", 123, "main", "st")
@@ -46,39 +48,38 @@ class StreetParseTest(unittest.TestCase):
 
 class FindNeighborhoodTest(unittest.TestCase):
     def setUp(self):
-        self._db = find_neighborhood.StreetDatabase(
-            "data/neighborhood_data.tsv")
+        self._db = find_neighborhood.StreetDatabase("data/neighborhood_data.tsv")
 
     def assertResults(self, street_address, district, neighborhood):
         self.assertEqual(
-            self._db.find(street_address), {
+            self._db.find(street_address),
+            {
                 "district": district.split(",") if district else [],
-                "neighborhood":
-                neighborhood.split(",") if neighborhood else []
-            })
+                "neighborhood": neighborhood.split(",") if neighborhood else [],
+            },
+        )
 
     def test_street_match(self):
-        self.assertResults("123 Main St", "6",
-                           "Financial District/South Beach")
+        self.assertResults("123 Main St", "6", "Financial District/South Beach")
 
     def test_padded_street_match(self):
-        self.assertResults("   123 Main St   ", "6",
-                           "Financial District/South Beach")
+        self.assertResults("   123 Main St   ", "6", "Financial District/South Beach")
 
     def test_full_address(self):
-        self.assertResults("123 Main St, San Francisco, CA 94105", "6",
-                           "Financial District/South Beach")
+        self.assertResults(
+            "123 Main St, San Francisco, CA 94105",
+            "6",
+            "Financial District/South Beach",
+        )
 
     def test_street_type_missing(self):
         self.assertResults("123 Main", "6", "Financial District/South Beach")
 
     def test_junk_suffix(self):
-        self.assertResults("123 Main Suite 100", "6",
-                           "Financial District/South Beach")
+        self.assertResults("123 Main Suite 100", "6", "Financial District/South Beach")
 
     def test_random_suffix(self):
-        self.assertResults("123 Main Suite 100", "6",
-                           "Financial District/South Beach")
+        self.assertResults("123 Main Suite 100", "6", "Financial District/South Beach")
 
     def test_unparseable_address(self):
         self.assertResults("1 10th", "", "")
@@ -86,8 +87,7 @@ class FindNeighborhoodTest(unittest.TestCase):
         self.assertResults("b123 Main St", "", "")
 
     def test_ambiguous_address(self):
-        self.assertResults("10 10th Apt 3", "2,6",
-                           "Inner Richmond,South of Market")
+        self.assertResults("10 10th Apt 3", "2,6", "Inner Richmond,South of Market")
 
     def test_no_match(self):
         self.assertResults("1 asdf123 st", "", "")
@@ -97,5 +97,5 @@ class FindNeighborhoodTest(unittest.TestCase):
         self.assertResults(None, "", "")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

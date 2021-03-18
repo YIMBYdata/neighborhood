@@ -43,8 +43,11 @@ def parse_street_address(street_address: str) -> tuple[int, str, str]:
     if not street_number:
         raise ValueError(str(parsed))
     street_number = street_number.rstrip(string.ascii_letters)
-    return (int(street_number), parsed.get("StreetName", "").lower(),
-            parsed.get("StreetNamePostType", "").lower())
+    return (
+        int(street_number),
+        parsed.get("StreetName", "").lower(),
+        parsed.get("StreetNamePostType", "").lower(),
+    )
 
 
 class HouseNumRange:
@@ -55,8 +58,15 @@ class HouseNumRange:
     number is withing [lo, hi] and is on the appropriate side of street, it
     matches.
     """
-    def __init__(self, side_code: str, house_num_low: int, house_num_high: int,
-                 district: str, neighborhood: str):
+
+    def __init__(
+        self,
+        side_code: str,
+        house_num_low: int,
+        house_num_high: int,
+        district: str,
+        neighborhood: str,
+    ):
         self._side_code = side_code
         self._house_num_low = house_num_low
         self._house_num_high = house_num_high
@@ -64,10 +74,11 @@ class HouseNumRange:
         self.neighborhood = neighborhood
 
     def Matches(self, number) -> bool:
-        if ((self._side_code == 'E' and number % 2 == 1)
-                or (self._side_code == 'O' and number % 2 == 0)):
+        if (self._side_code == "E" and number % 2 == 1) or (
+            self._side_code == "O" and number % 2 == 0
+        ):
             return False
-        if self._side_code == 'A':
+        if self._side_code == "A":
             return True
         return self._house_num_low <= number and number <= self._house_num_high
 
@@ -80,7 +91,7 @@ class StreetDatabase:
         matches = self._find_matches(street_address)
         return {
             "district": sorted(set([m.district for m in matches])),
-            "neighborhood": sorted(set([m.neighborhood for m in matches]))
+            "neighborhood": sorted(set([m.neighborhood for m in matches])),
         }
 
     def _read(self, data_filename: str) -> list[str]:
@@ -89,15 +100,21 @@ class StreetDatabase:
 
     def _parse(self, data: list[str]) -> dict[str, dict[str, list[HouseNumRange]]]:
         parsed_data = {}
-        reader = csv.reader(data, delimiter='\t')
+        reader = csv.reader(data, delimiter="\t")
         next(reader)
         for row in reader:
             ranges = parsed_data.setdefault(row[_STREET_NAME], {}).setdefault(
-                row[_STREET_TYPE], [])
+                row[_STREET_TYPE], []
+            )
             ranges.append(
-                HouseNumRange(row[_SIDE_CODE], int(row[_HOUSE_NUM_LO]),
-                              int(row[_HOUSE_NUM_HI]), row[_DISTRICT],
-                              row[_NEIGHBORHOOD]))
+                HouseNumRange(
+                    row[_SIDE_CODE],
+                    int(row[_HOUSE_NUM_LO]),
+                    int(row[_HOUSE_NUM_HI]),
+                    row[_DISTRICT],
+                    row[_NEIGHBORHOOD],
+                )
+            )
         return parsed_data
 
     def _find_matches(self, street_address: str) -> list[HouseNumRange]:
@@ -108,7 +125,8 @@ class StreetDatabase:
         """
         try:
             street_number, street_name, street_type = parse_street_address(
-                street_address)
+                street_address
+            )
         except ValueError:
             return []
         street_data = self._parsed_data.get(street_name, {})
@@ -119,9 +137,10 @@ class StreetDatabase:
 
 
 db = StreetDatabase(
-    os.path.join(os.path.dirname(__file__), 'data/neighborhood_data.tsv'))
+    os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
+)
 
 # ./app/find_neighborhood.py "123 Main St"
-if __name__ == '__main__':
+if __name__ == "__main__":
     assert len(sys.argv) == 2
     print(db.find(sys.argv[1]))
