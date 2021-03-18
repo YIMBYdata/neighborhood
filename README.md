@@ -10,6 +10,8 @@ cd data
 ./join_data.py elections-data.txt precincts.tsv > ../src/data/neighborhood_data.tsv
 ```
 
+NOTE: If the elections data set adds precincts, these must be manually added to precincts.tsv.
+
 This can be run on the command line via:
 
 ```bash
