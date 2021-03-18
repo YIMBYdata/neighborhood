@@ -1,4 +1,3 @@
-Flask==1.1.1
-gunicorn==20.0.4
+functions-framework==2.1.2
 usaddress==0.5.10
 usaddress-scourgify==0.2.4

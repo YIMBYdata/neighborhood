@@ -19,7 +19,7 @@ This can be tested on the command line via:
 This can be run as a server via:
 
 ```bash
-./src/find_neighborhood_server.py
+./tools/run_server.sh
 ```
 
 And accessed via:
@@ -29,6 +29,5 @@ And accessed via:
 This can be run as a Docker container:
 
 ```bash
-docker build -t neighborhood .
-docker run --rm -it -e PORT=80 -p 8080:80 neighborhood
+./tools/run_docker_server.sh
 ```
