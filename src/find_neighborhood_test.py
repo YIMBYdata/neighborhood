@@ -48,7 +48,7 @@ class StreetParseTest(unittest.TestCase):
 
 class FindNeighborhoodTest(unittest.TestCase):
     def setUp(self):
-        self._db = find_neighborhood.StreetDatabase("data/neighborhood_data.tsv")
+        self._db = find_neighborhood.db
 
     def assertResults(self, street_address, district, neighborhood):
         self.assertEqual(
