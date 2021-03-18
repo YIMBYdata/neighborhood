@@ -13,7 +13,6 @@ HouseNumHi (see the HouseNumRange class).
 """
 
 import csv
-import gzip
 import itertools
 import os
 import scourgify
@@ -85,8 +84,7 @@ class StreetDatabase:
         }
 
     def _read(self, data_filename: str) -> list[str]:
-        open_file = gzip.open if data_filename.endswith(".gz") else open
-        with open_file(data_filename, mode="rt") as f:
+        with open(data_filename, mode="rt") as f:
             return f.readlines()
 
     def _parse(self, data: list[str]) -> dict[str, dict[str, list[HouseNumRange]]]:
