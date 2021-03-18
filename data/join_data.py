@@ -8,8 +8,7 @@ and neighborhood, producing a data set that can be used by find_neighborhood.py
 to determine neighborhood given a street address.
 
 Sample usage:
-  ./join_data.py elections-data.txt precincts.tsv | gzip \
-  > neighborhood_data.tsv.gz
+  ./join_data.py elections-data.txt precincts.tsv > ../src/data/neighborhood_data.tsv
 """
 
 import csv
