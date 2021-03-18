@@ -7,7 +7,7 @@ run:
 
 ```bash
 cd data
-./join_data.py elections-data.txt precincts.tsv | gzip > ../src/data/neighborhood_data.tsv.gz
+./join_data.py elections-data.txt precincts.tsv > ../src/data/neighborhood_data.tsv
 ```
 
 This can be tested on the command line via:
