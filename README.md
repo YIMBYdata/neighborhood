@@ -1,6 +1,6 @@
 # neighborhood
 
-Server and CLI that can turn an SF street address into an SF neighborhood.
+Server, CLI, and library that can turn an SF street address into an SF district and neighborhood.
 
 To regenerate the data, download the ["Street Data Extract" data set](https://sfelections.org/tools/election_data/dataset.php?ATAB=d1970-01-01) and
 run:
