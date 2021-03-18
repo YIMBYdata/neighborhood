@@ -1,6 +1,5 @@
-#! /usr/bin/env python
 """
-Script that takes a data file produced by join_data.py and an address
+Library that takes a data file produced by join_data.py and an address
 (street number, name, and type) and produces the SF neighborhood that
 address is in.
 
@@ -140,7 +139,4 @@ class StreetDatabase:
 _DATA_FILE = os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
 db = StreetDatabase(_DATA_FILE)
 
-# ./app/find_neighborhood.py "123 Main St"
-if __name__ == "__main__":
-    assert len(sys.argv) == 2
-    print(db.find(sys.argv[1]))
+find = db.find

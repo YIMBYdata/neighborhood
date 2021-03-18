@@ -1,12 +1,10 @@
-#! /usr/bin/env python
-
 import pytest
 
-import find_neighborhood
+import neighborhood
 
 
 def assert_parse(street_address, street_number, street_name, street_type):
-    assert find_neighborhood.parse_street_address(street_address) == (
+    assert neighborhood.parse_street_address(street_address) == (
         street_number,
         street_name,
         street_type,
@@ -44,20 +42,20 @@ def test_number_with_letter_suffix():
 
 def test_number_value_error():
     with pytest.raises(ValueError):
-        find_neighborhood.parse_street_address("b123 Main St")
+        neighborhood.parse_street_address("b123 Main St")
 
 
 def test_empty_error():
     with pytest.raises(ValueError):
-        find_neighborhood.parse_street_address("")
+        neighborhood.parse_street_address("")
     with pytest.raises(ValueError):
-        find_neighborhood.parse_street_address(None)
+        neighborhood.parse_street_address(None)
 
 
-def assert_find_results(street_address, district, neighborhood):
-    assert find_neighborhood.db.find(street_address) == {
-        "district": district.split(",") if district else [],
-        "neighborhood": neighborhood.split(",") if neighborhood else [],
+def assert_find_results(street_address, districts, neighborhoods):
+    assert neighborhood.db.find(street_address) == {
+        "district": districts.split(",") if districts else [],
+        "neighborhood": neighborhoods.split(",") if neighborhoods else [],
     }
 
 
