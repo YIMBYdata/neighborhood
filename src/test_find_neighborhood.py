@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 
-import find_neighborhood
 import pytest
+
+import find_neighborhood
 
 
 def assert_parse(street_address, street_number, street_name, street_type):
