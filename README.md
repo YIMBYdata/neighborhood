@@ -16,10 +16,10 @@ This can be run on the command line via:
 ./src/find_neighborhood.py "123 Main St"
 ```
 
-This can be run as a server via:
+This can be run as a server locally (hot reload) via:
 
 ```bash
-./tools/run_server.sh
+./tools/run_debug_server.sh
 ```
 
 And accessed via:
