@@ -1,101 +1,107 @@
 #! /usr/bin/env python
 
 import find_neighborhood
-import unittest
+import pytest
 
 
-class StreetParseTest(unittest.TestCase):
-    def assertStreetParsesTo(
-        self, street_address, street_number, street_name, street_type
-    ):
-        self.assertEqual(
-            find_neighborhood.parse_street_address(street_address),
-            (street_number, street_name, street_type),
-        )
-
-    def test_basic_parse(self):
-        self.assertStreetParsesTo("123 Main St", 123, "main", "st")
-
-    def test_apt_number_parse(self):
-        self.assertStreetParsesTo("123 Main St #101", 123, "main", "st")
-
-    def test_street_type_normalization(self):
-        self.assertStreetParsesTo("123 Main Street", 123, "main", "st")
-
-    def test_street_type_normalization(self):
-        self.assertStreetParsesTo("123 Main Street", 123, "main", "st")
-
-    def test_apt_number_parse_with_suite(self):
-        self.assertStreetParsesTo("123 Main St Suite 101", 123, "main", "st")
-
-    def test_street_type_missing(self):
-        self.assertStreetParsesTo("123 Main", 123, "main", "")
-
-    def test_number_with_letter_suffix(self):
-        self.assertStreetParsesTo("123b Main St", 123, "main", "st")
-        self.assertStreetParsesTo("123 Main St b", 123, "main", "st")
-
-    def test_number_value_error(self):
-        with self.assertRaises(ValueError):
-            find_neighborhood.parse_street_address("b123 Main St")
-
-    def test_empty_error(self):
-        with self.assertRaises(ValueError):
-            find_neighborhood.parse_street_address("")
-        with self.assertRaises(ValueError):
-            find_neighborhood.parse_street_address(None)
+def assert_parse(street_address, street_number, street_name, street_type):
+    assert find_neighborhood.parse_street_address(street_address) == (
+        street_number,
+        street_name,
+        street_type,
+    )
 
 
-class FindNeighborhoodTest(unittest.TestCase):
-    def setUp(self):
-        self._db = find_neighborhood.db
-
-    def assertResults(self, street_address, district, neighborhood):
-        self.assertEqual(
-            self._db.find(street_address),
-            {
-                "district": district.split(",") if district else [],
-                "neighborhood": neighborhood.split(",") if neighborhood else [],
-            },
-        )
-
-    def test_street_match(self):
-        self.assertResults("123 Main St", "6", "Financial District/South Beach")
-
-    def test_padded_street_match(self):
-        self.assertResults("   123 Main St   ", "6", "Financial District/South Beach")
-
-    def test_full_address(self):
-        self.assertResults(
-            "123 Main St, San Francisco, CA 94105",
-            "6",
-            "Financial District/South Beach",
-        )
-
-    def test_street_type_missing(self):
-        self.assertResults("123 Main", "6", "Financial District/South Beach")
-
-    def test_junk_suffix(self):
-        self.assertResults("123 Main Suite 100", "6", "Financial District/South Beach")
-
-    def test_random_suffix(self):
-        self.assertResults("123 Main Suite 100", "6", "Financial District/South Beach")
-
-    def test_unparseable_address(self):
-        self.assertResults("1 10th", "", "")
-        self.assertResults("1 10th Apt 3", "", "")
-        self.assertResults("b123 Main St", "", "")
-
-    def test_ambiguous_address(self):
-        self.assertResults("10 10th Apt 3", "2,6", "Inner Richmond,South of Market")
-
-    def test_no_match(self):
-        self.assertResults("1 asdf123 st", "", "")
-
-    def test_empty_input(self):
-        self.assertResults(" ", "", "")
-        self.assertResults(None, "", "")
+def test_basic_parse():
+    assert_parse("123 Main St", 123, "main", "st")
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_apt_number_parse():
+    assert_parse("123 Main St #101", 123, "main", "st")
+
+
+def test_street_type_normalization():
+    assert_parse("123 Main Street", 123, "main", "st")
+
+
+def test_street_type_normalization():
+    assert_parse("123 Main Street", 123, "main", "st")
+
+
+def test_apt_number_parse_with_suite():
+    assert_parse("123 Main St Suite 101", 123, "main", "st")
+
+
+def test_street_type_missing():
+    assert_parse("123 Main", 123, "main", "")
+
+
+def test_number_with_letter_suffix():
+    assert_parse("123b Main St", 123, "main", "st")
+    assert_parse("123 Main St b", 123, "main", "st")
+
+
+def test_number_value_error():
+    with pytest.raises(ValueError):
+        find_neighborhood.parse_street_address("b123 Main St")
+
+
+def test_empty_error():
+    with pytest.raises(ValueError):
+        find_neighborhood.parse_street_address("")
+    with pytest.raises(ValueError):
+        find_neighborhood.parse_street_address(None)
+
+
+def assert_find_results(street_address, district, neighborhood):
+    assert find_neighborhood.db.find(street_address) == {
+        "district": district.split(",") if district else [],
+        "neighborhood": neighborhood.split(",") if neighborhood else [],
+    }
+
+
+def test_street_match():
+    assert_find_results("123 Main St", "6", "Financial District/South Beach")
+
+
+def test_padded_street_match():
+    assert_find_results("   123 Main St   ", "6", "Financial District/South Beach")
+
+
+def test_full_address():
+    assert_find_results(
+        "123 Main St, San Francisco, CA 94105",
+        "6",
+        "Financial District/South Beach",
+    )
+
+
+def test_street_type_missing():
+    assert_find_results("123 Main", "6", "Financial District/South Beach")
+
+
+def test_junk_suffix():
+    assert_find_results("123 Main Suite 100", "6", "Financial District/South Beach")
+
+
+def test_random_suffix():
+    assert_find_results("123 Main Suite 100", "6", "Financial District/South Beach")
+
+
+def test_unparseable_address():
+    assert_find_results("1 10th", "", "")
+    assert_find_results("1 10th Apt 3", "", "")
+    assert_find_results("b123 Main St", "", "")
+
+
+def test_ambiguous_address():
+    assert_find_results("10 10th Apt 3", "2,6", "Inner Richmond,South of Market")
+
+
+def test_no_match():
+    assert_find_results("1 asdf123 st", "", "")
+
+
+def test_empty_input():
+    assert_find_results(" ", "", "")
+    assert_find_results(None, "", "")
