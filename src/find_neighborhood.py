@@ -15,9 +15,10 @@ HouseNumHi (see the HouseNumRange class).
 import csv
 import itertools
 import os
-import scourgify
 import string
 import sys
+
+import scourgify
 import usaddress
 
 # CSV index constants
@@ -136,9 +137,8 @@ class StreetDatabase:
         return [r for r in ranges if r.Matches(street_number)]
 
 
-db = StreetDatabase(
-    os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
-)
+_DATA_FILE = os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
+db = StreetDatabase(_DATA_FILE)
 
 # ./app/find_neighborhood.py "123 Main St"
 if __name__ == "__main__":

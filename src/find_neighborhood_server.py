@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 
-import flask
 import os
+
+import flask
 
 import find_neighborhood
 
