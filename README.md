@@ -24,7 +24,7 @@ This can be run as a server via:
 
 And accessed via:
 
-<http://localhost:8080/sf?address=123+Main+St>
+<http://localhost:8080/?address=123+Main+St>
 
 This can be run as a Docker container:
 
