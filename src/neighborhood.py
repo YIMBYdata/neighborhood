@@ -137,6 +137,6 @@ class StreetDatabase:
 
 
 _DATA_FILE = os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
-db = StreetDatabase(_DATA_FILE)
+_db = StreetDatabase(_DATA_FILE)
 
-find = db.find
+find = _db.find

@@ -53,7 +53,7 @@ def test_empty_error():
 
 
 def assert_find_results(street_address, districts, neighborhoods):
-    assert neighborhood.db.find(street_address) == {
+    assert neighborhood.find(street_address) == {
         "district": districts.split(",") if districts else [],
         "neighborhood": neighborhoods.split(",") if neighborhoods else [],
     }
