@@ -1,5 +1,9 @@
+.git*
 __pycache__
-.pytest_cache
+*.md
 *.pyc
-*.pyd
 *.pyo
+*.pyd
+.Python
+requirements-test.txt
+test*.py
