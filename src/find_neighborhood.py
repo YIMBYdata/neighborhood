@@ -30,7 +30,7 @@ _DISTRICT = 5
 _NEIGHBORHOOD = 6
 
 
-def parse_street_address(street_address: str) -> tuple[int, str, str]:
+def parse_street_address(street_address: str) -> tuple:
     """Parses a raw street address to (number, name, type)."""
     if not street_address:
         raise ValueError("Empty address")
@@ -87,18 +87,18 @@ class StreetDatabase:
     def __init__(self, data_filename: str):
         self._parsed_data = self._parse(self._read(data_filename))
 
-    def find(self, street_address: str) -> dict[str, list[str]]:
+    def find(self, street_address: str) -> dict:
         matches = self._find_matches(street_address)
         return {
             "district": sorted(set([m.district for m in matches])),
             "neighborhood": sorted(set([m.neighborhood for m in matches])),
         }
 
-    def _read(self, data_filename: str) -> list[str]:
+    def _read(self, data_filename: str) -> list:
         with open(data_filename, mode="rt") as f:
             return f.readlines()
 
-    def _parse(self, data: list[str]) -> dict[str, dict[str, list[HouseNumRange]]]:
+    def _parse(self, data: list) -> dict:
         parsed_data = {}
         reader = csv.reader(data, delimiter="\t")
         next(reader)
@@ -117,7 +117,7 @@ class StreetDatabase:
             )
         return parsed_data
 
-    def _find_matches(self, street_address: str) -> list[HouseNumRange]:
+    def _find_matches(self, street_address: str) -> list:
         """
         Given the loaded data and the input address, finds HouseNumRanges
         that match. If the street_type doesn't match for a given street, we'll fall

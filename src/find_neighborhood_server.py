@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 
-import find_neighborhood
 import flask
 import os
+
+import find_neighborhood
 
 app = flask.Flask(__name__)
 

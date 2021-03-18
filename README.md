@@ -6,20 +6,20 @@ To regenerate the data, download the ["Street Data Extract" data set](https://sf
 run:
 
 ```bash
-$ cd data
-$ ./join_data.py elections-data.txt precincts.tsv | gzip > ../app/data/neighborhood_data.tsv.gz
+cd data
+./join_data.py elections-data.txt precincts.tsv | gzip > ../src/data/neighborhood_data.tsv.gz
 ```
 
 This can be tested on the command line via:
 
 ```bash
-$ ./app/find_neighborhood.py "123 Main St"
+./src/find_neighborhood.py "123 Main St"
 ```
 
 This can be run as a server via:
 
 ```bash
-$ ./app/find_neighborhood_server.py
+./src/find_neighborhood_server.py
 ```
 
 And accessed via:
@@ -29,6 +29,6 @@ And accessed via:
 This can be run as a Docker container:
 
 ```bash
-$ docker build -t neighborhood .
-$ docker run --rm -it -e PORT=80 -p 8080:80 neighborhood
+docker build -t neighborhood .
+docker run --rm -it -e PORT=80 -p 8080:80 neighborhood
 ```
