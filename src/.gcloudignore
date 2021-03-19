@@ -1,0 +1,7 @@
+.gcloudignore
+.git*
+__pycache__
+*.md
+*.pyc
+test_*
+*test.txt
