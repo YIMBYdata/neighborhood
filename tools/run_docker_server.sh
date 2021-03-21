@@ -1,6 +1,6 @@
 #!/bin/bash
 # Runs a local server using Docker, which is the way it's deployed.
-set -ae
+set -e
 
 APP_NAME="neighborhood"
 
