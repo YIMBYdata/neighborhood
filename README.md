@@ -15,13 +15,14 @@ Note that if the elections data set adds precincts, these must be manually added
 This can be run on the command line via:
 
 ```bash
+. .venv/bin/activate
 ./src/find_neighborhood.py "123 Main St"
 ```
 
 This can be run as a server locally (hot reload) via:
 
 ```bash
-./tools/run_debug_server.sh
+make run
 ```
 
 And accessed via:
@@ -31,5 +32,5 @@ And accessed via:
 This can be run as a Docker container:
 
 ```bash
-./tools/run_docker_server.sh
+make run_docker
 ```
