@@ -6,13 +6,12 @@
 # Constants
 APP_NAME = neighborhood
 FUNCTION_TARGET = handle_request
-FUNCTION_TARGET_ENV = GOOGLE_FUNCTION_TARGET=$(FUNCTION_TARGET)
 
-# Builds a local Docker container with pack.
+# Builds a local Docker image with pack.
 build:
 	pack build $(APP_NAME) \
 		--path src \
-		--env $(FUNCTION_TARGET_ENV) \
+		--env GOOGLE_FUNCTION_TARGET=$(FUNCTION_TARGET) \
 		--builder gcr.io/buildpacks/builder:v1
 
 # Runs a local debug server.
