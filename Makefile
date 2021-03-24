@@ -8,14 +8,14 @@ APP_NAME = neighborhood
 FUNCTION_TARGET = handle_request
 FUNCTION_TARGET_ENV = GOOGLE_FUNCTION_TARGET=$(FUNCTION_TARGET)
 
+# Runs a local debug server.
 run:
-	# Runs a local debug server.
 	. .venv/bin/activate; \
 	cd src; \
 	functions-framework --target $(FUNCTION_TARGET) --debug
 
+# Runs a local Docker server.
 run_docker:
-	# Runs a local Docker server.
 	pack build $(APP_NAME) \
 		--path src \
 		--env $(FUNCTION_TARGET_ENV) \
@@ -27,8 +27,8 @@ test:
 	pytest; \
 	pytype src
 
+# Sets up the virtual environment.
 venv:
-	# Sets up the virtual environment.
 	python -m venv .venv; \
 	source .venv/bin/activate; \
 	python -m pip install --upgrade pip wheel; \
