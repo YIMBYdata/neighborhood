@@ -1,4 +1,4 @@
-.PHONY: run run_docker test venv
+.PHONY: build run run_docker run_docker_image test venv
 
 .DEFAULT_GOAL = run
 .SHELLFLAGS = -ec
@@ -8,18 +8,24 @@ APP_NAME = neighborhood
 FUNCTION_TARGET = handle_request
 FUNCTION_TARGET_ENV = GOOGLE_FUNCTION_TARGET=$(FUNCTION_TARGET)
 
+# Builds a local Docker container with pack.
+build:
+	pack build $(APP_NAME) \
+		--path src \
+		--env $(FUNCTION_TARGET_ENV) \
+		--builder gcr.io/buildpacks/builder:v1
+
 # Runs a local debug server.
 run:
 	. .venv/bin/activate; \
 	cd src; \
 	functions-framework --target $(FUNCTION_TARGET) --debug
 
-# Runs a local Docker server.
-run_docker:
-	pack build $(APP_NAME) \
-		--path src \
-		--env $(FUNCTION_TARGET_ENV) \
-		--builder gcr.io/buildpacks/builder:v1
+# Builds and runs a local Docker image.
+run_docker: build run_docker_image
+
+# Runs a local Docker image.
+run_docker_image:
 	docker run --rm -it -p 8080:8080 $(APP_NAME)
 
 test:
