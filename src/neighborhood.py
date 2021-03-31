@@ -15,7 +15,7 @@ import csv
 import itertools
 import os
 import string
-import sys
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import scourgify
 import usaddress
@@ -30,7 +30,7 @@ _DISTRICT = 5
 _NEIGHBORHOOD = 6
 
 
-def parse_street_address(street_address: str) -> tuple:
+def parse_street_address(street_address: str) -> Tuple[int, str, str]:
     """Parses a raw street address to (number, name, type)."""
     if not street_address:
         raise ValueError("Empty address")
@@ -59,6 +59,7 @@ class HouseNumRange:
     matches.
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         side_code: str,
@@ -66,40 +67,40 @@ class HouseNumRange:
         house_num_high: int,
         district: str,
         neighborhood: str,
-    ):
+    ) -> None:
         self._side_code = side_code
         self._house_num_low = house_num_low
         self._house_num_high = house_num_high
         self.district = district
         self.neighborhood = neighborhood
 
-    def Matches(self, number) -> bool:
+    def Matches(self, number: int) -> bool:
         if (self._side_code == "E" and number % 2 == 1) or (
             self._side_code == "O" and number % 2 == 0
         ):
             return False
         if self._side_code == "A":
             return True
-        return self._house_num_low <= number and number <= self._house_num_high
+        return self._house_num_low <= number <= self._house_num_high
 
 
 class StreetDatabase:
-    def __init__(self, data_filename: str):
+    def __init__(self, data_filename: str) -> None:
         self._parsed_data = self._parse(self._read(data_filename))
 
-    def find(self, street_address: str) -> dict:
+    def find(self, street_address: str) -> Dict[str, List[str]]:
         matches = self._find_matches(street_address)
         return {
-            "district": sorted(set([m.district for m in matches])),
-            "neighborhood": sorted(set([m.neighborhood for m in matches])),
+            "district": sorted({m.district for m in matches}),
+            "neighborhood": sorted({m.neighborhood for m in matches}),
         }
 
-    def _read(self, data_filename: str) -> list:
+    def _read(self, data_filename: str) -> List[str]:
         with open(data_filename, mode="rt") as f:
             return f.readlines()
 
-    def _parse(self, data: list) -> dict:
-        parsed_data = {}
+    def _parse(self, data: List[str]) -> Dict[str, Dict[str, List[HouseNumRange]]]:
+        parsed_data: Dict[str, Dict[str, List[HouseNumRange]]] = {}
         reader = csv.reader(data, delimiter="\t")
         next(reader)
         for row in reader:
@@ -117,7 +118,7 @@ class StreetDatabase:
             )
         return parsed_data
 
-    def _find_matches(self, street_address: str) -> list:
+    def _find_matches(self, street_address: str) -> List[HouseNumRange]:
         """
         Given the loaded data and the input address, finds HouseNumRanges
         that match. If the street_type doesn't match for a given street, we'll fall
@@ -130,7 +131,7 @@ class StreetDatabase:
         except ValueError:
             return []
         street_data = self._parsed_data.get(street_name, {})
-        ranges = street_data.get(street_type)
+        ranges: Optional[Iterable[HouseNumRange]] = street_data.get(street_type)
         if not ranges:
             ranges = itertools.chain(*street_data.values())
         return [r for r in ranges if r.Matches(street_number)]
