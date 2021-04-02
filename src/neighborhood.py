@@ -15,7 +15,7 @@ import csv
 import itertools
 import os
 import string
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Final, Iterable, List, Optional, Tuple
 
 import scourgify
 import usaddress
@@ -68,13 +68,13 @@ class HouseNumRange:
         district: str,
         neighborhood: str,
     ) -> None:
-        self._side_code = side_code
-        self._house_num_low = house_num_low
-        self._house_num_high = house_num_high
-        self.district = district
-        self.neighborhood = neighborhood
+        self._side_code: Final = side_code
+        self._house_num_low: Final = house_num_low
+        self._house_num_high: Final = house_num_high
+        self.district: Final = district
+        self.neighborhood: Final = neighborhood
 
-    def Matches(self, number: int) -> bool:
+    def matches(self, number: int) -> bool:
         if (self._side_code == "E" and number % 2 == 1) or (
             self._side_code == "O" and number % 2 == 0
         ):
@@ -86,7 +86,7 @@ class HouseNumRange:
 
 class StreetDatabase:
     def __init__(self, data_filename: str) -> None:
-        self._parsed_data = self._parse(self._read(data_filename))
+        self._parsed_data: Final = self._parse(self._read(data_filename))
 
     def find(self, street_address: str) -> Dict[str, List[str]]:
         matches = self._find_matches(street_address)
@@ -134,10 +134,11 @@ class StreetDatabase:
         ranges: Optional[Iterable[HouseNumRange]] = street_data.get(street_type)
         if not ranges:
             ranges = itertools.chain(*street_data.values())
-        return [r for r in ranges if r.Matches(street_number)]
+        return [r for r in ranges if r.matches(street_number)]
 
 
-_DATA_FILE = os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
-_db = StreetDatabase(_DATA_FILE)
+_db: Final = StreetDatabase(
+    os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
+)
 
 find = _db.find
