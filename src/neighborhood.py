@@ -11,6 +11,7 @@ and the street number is in the range defined by SideCode, HouseNumLo, and
 HouseNumHi (see the HouseNumRange class).
 """
 
+from collections import namedtuple
 import csv
 import itertools
 import os
@@ -20,14 +21,11 @@ from typing import Dict, Final, Iterable, List, Optional, Tuple
 import scourgify
 import usaddress
 
-# CSV index constants
-_STREET_NAME = 0
-_STREET_TYPE = 1
-_SIDE_CODE = 2
-_HOUSE_NUM_LO = 3
-_HOUSE_NUM_HI = 4
-_DISTRICT = 5
-_NEIGHBORHOOD = 6
+# CSV row tuple
+Row = namedtuple(
+    "Row",
+    "street_name, street_type, side_code, house_num_lo, house_num_hi, district, neighborhood",
+)
 
 
 def parse_street_address(street_address: str) -> Tuple[int, str, str]:
@@ -103,17 +101,17 @@ class StreetDatabase:
         parsed_data: Dict[str, Dict[str, List[HouseNumRange]]] = {}
         reader = csv.reader(data, delimiter="\t")
         next(reader)
-        for row in reader:
-            ranges = parsed_data.setdefault(row[_STREET_NAME], {}).setdefault(
-                row[_STREET_TYPE], []
+        for row in map(Row._make, reader):
+            ranges = parsed_data.setdefault(row.street_name, {}).setdefault(
+                row.street_type, []
             )
             ranges.append(
                 HouseNumRange(
-                    row[_SIDE_CODE],
-                    int(row[_HOUSE_NUM_LO]),
-                    int(row[_HOUSE_NUM_HI]),
-                    row[_DISTRICT],
-                    row[_NEIGHBORHOOD],
+                    row.side_code,
+                    int(row.house_num_lo),
+                    int(row.house_num_hi),
+                    row.district,
+                    row.neighborhood,
                 )
             )
         return parsed_data
