@@ -11,24 +11,33 @@ and the street number is in the range defined by SideCode, HouseNumLo, and
 HouseNumHi (see the HouseNumRange class).
 """
 
-from collections import namedtuple
 import csv
-import itertools
+from itertools import chain
 import os
 import string
-from typing import Dict, Final, Iterable, List, Optional, Tuple
+from typing import Dict, Final, Iterable, List, NamedTuple, Optional
 
 import scourgify
 import usaddress
 
 # CSV row tuple
-Row = namedtuple(
-    "Row",
-    "street_name, street_type, side_code, house_num_lo, house_num_hi, district, neighborhood",
-)
+class Row(NamedTuple):
+    street_name: str
+    street_type: str
+    side_code: str
+    house_num_lo: str
+    house_num_hi: str
+    district: str
+    neighborhood: str
 
 
-def parse_street_address(street_address: str) -> Tuple[int, str, str]:
+class StreetAddress(NamedTuple):
+    number: int
+    name: str
+    type: str
+
+
+def parse_street_address(street_address: str) -> StreetAddress:
     """Parses a raw street address to (number, name, type)."""
     if not street_address:
         raise ValueError("Empty address")
@@ -40,15 +49,14 @@ def parse_street_address(street_address: str) -> Tuple[int, str, str]:
     street_number: str = parsed.get("AddressNumber")
     if not street_number:
         raise ValueError(str(parsed))
-    street_number = street_number.rstrip(string.ascii_letters)
-    return (
-        int(street_number),
+    return StreetAddress(
+        int(street_number.rstrip(string.ascii_letters)),
         parsed.get("StreetName", "").lower(),
         parsed.get("StreetNamePostType", "").lower(),
     )
 
 
-class HouseNumRange:
+class HouseNumRange(NamedTuple):
     """
     The data file contains house number ranges defined by a side code, range
     low (inclusive) and range high (inclusive). The side code can be E for even,
@@ -57,29 +65,20 @@ class HouseNumRange:
     matches.
     """
 
-    # pylint: disable=too-many-arguments
-    def __init__(
-        self,
-        side_code: str,
-        house_num_low: int,
-        house_num_high: int,
-        district: str,
-        neighborhood: str,
-    ) -> None:
-        self._side_code: Final = side_code
-        self._house_num_low: Final = house_num_low
-        self._house_num_high: Final = house_num_high
-        self.district: Final = district
-        self.neighborhood: Final = neighborhood
+    side_code: str
+    house_num_low: int
+    house_num_high: int
+    district: str
+    neighborhood: str
 
     def matches(self, number: int) -> bool:
-        if (self._side_code == "E" and number % 2 == 1) or (
-            self._side_code == "O" and number % 2 == 0
-        ):
+        if self.side_code == "E" and number % 2 == 1:
             return False
-        if self._side_code == "A":
+        if self.side_code == "O" and number % 2 == 0:
+            return False
+        if self.side_code == "A":
             return True
-        return self._house_num_low <= number <= self._house_num_high
+        return self.house_num_low <= number <= self.house_num_high
 
 
 class StreetDatabase:
@@ -102,9 +101,8 @@ class StreetDatabase:
         reader = csv.reader(data, delimiter="\t")
         next(reader)
         for row in map(Row._make, reader):
-            ranges = parsed_data.setdefault(row.street_name, {}).setdefault(
-                row.street_type, []
-            )
+            street_name_data = parsed_data.setdefault(row.street_name, {})
+            ranges = street_name_data.setdefault(row.street_type, [])
             ranges.append(
                 HouseNumRange(
                     row.side_code,
@@ -116,23 +114,21 @@ class StreetDatabase:
             )
         return parsed_data
 
-    def _find_matches(self, street_address: str) -> List[HouseNumRange]:
+    def _find_matches(self, raw_street_address: str) -> List[HouseNumRange]:
         """
         Given the loaded data and the input address, finds HouseNumRanges
         that match. If the street_type doesn't match for a given street, we'll fall
         back to all street types for that street.
         """
         try:
-            street_number, street_name, street_type = parse_street_address(
-                street_address
-            )
+            street_address = parse_street_address(raw_street_address)
         except ValueError:
             return []
-        street_data = self._parsed_data.get(street_name, {})
-        ranges: Optional[Iterable[HouseNumRange]] = street_data.get(street_type)
+        street_data = self._parsed_data.get(street_address.name, {})
+        ranges: Optional[Iterable[HouseNumRange]] = street_data.get(street_address.type)
         if not ranges:
-            ranges = itertools.chain(*street_data.values())
-        return [r for r in ranges if r.matches(street_number)]
+            ranges = chain(*street_data.values())
+        return [r for r in ranges if r.matches(street_address.number)]
 
 
 _db: Final = StreetDatabase(
