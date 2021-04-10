@@ -12,16 +12,18 @@ HouseNumHi (see the HouseNumRange class).
 """
 
 import csv
+from dataclasses import dataclass
 from itertools import chain
 import os
 import string
-from typing import Dict, Final, Iterable, List, NamedTuple, Optional
+from typing import Dict, Final, Iterable, List, Optional
 
 import scourgify
 import usaddress
 
 # CSV row tuple
-class Row(NamedTuple):
+@dataclass(frozen=True)
+class Row:
     street_name: str
     street_type: str
     side_code: str
@@ -31,7 +33,8 @@ class Row(NamedTuple):
     neighborhood: str
 
 
-class StreetAddress(NamedTuple):
+@dataclass(frozen=True)
+class StreetAddress:
     number: int
     name: str
     type: str
@@ -56,7 +59,8 @@ def parse_street_address(street_address: str) -> StreetAddress:
     )
 
 
-class HouseNumRange(NamedTuple):
+@dataclass(frozen=True)
+class HouseNumRange:
     """
     The data file contains house number ranges defined by a side code, range
     low (inclusive) and range high (inclusive). The side code can be E for even,
@@ -100,7 +104,8 @@ class StreetDatabase:
         parsed_data: Dict[str, Dict[str, List[HouseNumRange]]] = {}
         reader = csv.reader(data, delimiter="\t")
         next(reader)
-        for row in map(Row._make, reader):
+        for raw_row in reader:
+            row = Row(*raw_row)
             street_name_data = parsed_data.setdefault(row.street_name, {})
             ranges = street_name_data.setdefault(row.street_type, [])
             ranges.append(

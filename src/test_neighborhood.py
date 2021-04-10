@@ -6,11 +6,12 @@ import neighborhood
 def assert_parse(
     street_address: str, street_number: int, street_name: str, street_type: str
 ) -> None:
-    assert neighborhood.parse_street_address(street_address) == (
+    expected = neighborhood.StreetAddress(
         street_number,
         street_name,
         street_type,
     )
+    assert neighborhood.parse_street_address(street_address) == expected
 
 
 def test_basic_parse() -> None:
