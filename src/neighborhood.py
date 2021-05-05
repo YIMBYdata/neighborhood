@@ -82,7 +82,7 @@ class StreetDatabase:
         return street_data[
             (street_data["SideCode"].isin([street_address.side_code, "A"]))
             & (street_data["HouseNumLo"] <= street_address.number)
-            & (street_address.number <= street_data["HouseNumHi"])
+            & (street_data["HouseNumHi"] >= street_address.number)
         ]
 
 
