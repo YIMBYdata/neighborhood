@@ -53,7 +53,7 @@ def assert_find_results(
     street_address: str, districts: str, neighborhoods: str
 ) -> None:
     assert neighborhood.find(street_address) == {
-        "district": districts.split(",") if districts else [],
+        "district": [int(d) for d in districts.split(",")] if districts else [],
         "neighborhood": neighborhoods.split(",") if neighborhoods else [],
     }
 
