@@ -14,7 +14,7 @@ HouseNumHi.
 from dataclasses import dataclass
 import os
 import string
-from typing import Any, Dict, Final, List
+from typing import Final, List
 
 import pandas as pd
 import scourgify
@@ -56,7 +56,13 @@ def parse_street_address(street_address: str) -> StreetAddress:
     )
 
 
-def find(raw_street_address: str) -> Dict[str, List[Any]]:
+@dataclass(frozen=True, order=True)
+class Result:
+    district: int
+    neighborhood: str
+
+
+def find(raw_street_address: str) -> List[Result]:
     """
     Given the loaded data and the input address, finds rows that match.
     If the street_type doesn't exist for a given street, we'll fall back
@@ -65,7 +71,7 @@ def find(raw_street_address: str) -> Dict[str, List[Any]]:
     try:
         street_address = parse_street_address(raw_street_address)
     except ValueError:
-        return {"district": [], "neighborhood": []}
+        return []
     name_restrict = _data["StreetName"] == street_address.name
     type_restrict = _data["StreetType"] == street_address.type
     street_data = _data[name_restrict & type_restrict]
@@ -76,7 +82,6 @@ def find(raw_street_address: str) -> Dict[str, List[Any]]:
         & (street_data["HouseNumLo"] <= street_address.number)
         & (street_data["HouseNumHi"] >= street_address.number)
     ]
-    return {
-        "district": sorted(set(matches["District"])),
-        "neighborhood": sorted(set(matches["Neighborhood"])),
-    }
+    return sorted(
+        {Result(row["District"], row["Neighborhood"]) for _, row in matches.iterrows()}
+    )

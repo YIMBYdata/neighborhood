@@ -1,6 +1,7 @@
 import pytest
 
 import neighborhood
+from neighborhood import Result
 
 
 def assert_parse(
@@ -49,57 +50,59 @@ def test_empty_error() -> None:
         neighborhood.parse_street_address("")
 
 
-def assert_find_results(
-    street_address: str, districts: str, neighborhoods: str
-) -> None:
-    assert neighborhood.find(street_address) == {
-        "district": [int(d) for d in districts.split(",")] if districts else [],
-        "neighborhood": neighborhoods.split(",") if neighborhoods else [],
-    }
+def assert_find_results(street_address: str, *results: Result) -> None:
+    assert neighborhood.find(street_address) == list(results)
 
 
 def test_street_match() -> None:
-    assert_find_results("123 Main St", "6", "Financial District/South Beach")
+    assert_find_results("123 Main St", Result(6, "Financial District/South Beach"))
 
 
 def test_padded_street_match() -> None:
-    assert_find_results("   123 Main St   ", "6", "Financial District/South Beach")
+    assert_find_results(
+        "   123 Main St   ", Result(6, "Financial District/South Beach")
+    )
 
 
 def test_full_address() -> None:
     assert_find_results(
         "123 Main St, San Francisco, CA 94105",
-        "6",
-        "Financial District/South Beach",
+        Result(6, "Financial District/South Beach"),
     )
 
 
 def test_street_type_missing_find() -> None:
-    assert_find_results("123 Main", "6", "Financial District/South Beach")
+    assert_find_results("123 Main", Result(6, "Financial District/South Beach"))
 
 
 def test_junk_suffix() -> None:
-    assert_find_results("123 Main Suite 100", "6", "Financial District/South Beach")
+    assert_find_results(
+        "123 Main Suite 100", Result(6, "Financial District/South Beach")
+    )
 
 
 def test_random_suffix() -> None:
-    assert_find_results("123 Main Suite 100", "6", "Financial District/South Beach")
+    assert_find_results(
+        "123 Main Suite 100", Result(6, "Financial District/South Beach")
+    )
 
 
 def test_unparseable_address() -> None:
-    assert_find_results("1 10th", "", "")
-    assert_find_results("1 10th Apt 3", "", "")
-    assert_find_results("b123 Main St", "", "")
+    assert_find_results("1 10th")
+    assert_find_results("1 10th Apt 3")
+    assert_find_results("b123 Main St")
 
 
 def test_ambiguous_address() -> None:
-    assert_find_results("10 10th Apt 3", "2,6", "Inner Richmond,South of Market")
+    assert_find_results(
+        "10 10th Apt 3", Result(2, "Inner Richmond"), Result(6, "South of Market")
+    )
 
 
 def test_no_match() -> None:
-    assert_find_results("1 asdf123 st", "", "")
+    assert_find_results("1 asdf123 st")
 
 
 def test_empty_input() -> None:
-    assert_find_results(" ", "", "")
-    assert_find_results("", "", "")
+    assert_find_results(" ")
+    assert_find_results("")
