@@ -21,6 +21,11 @@ import scourgify
 import usaddress
 
 
+_data: Final = pd.read_csv(
+    os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv"), "\t"
+)
+
+
 @dataclass(frozen=True)
 class StreetAddress:
     number: int
@@ -51,43 +56,27 @@ def parse_street_address(street_address: str) -> StreetAddress:
     )
 
 
-class StreetDatabase:
-    def __init__(self, data_filename: str) -> None:
-        self._data: Final = pd.read_csv(data_filename, "\t")
-
-    def find(self, street_address: str) -> Dict[str, List[Any]]:
-        matches = self._find_matches(street_address)
-        return {
-            "district": sorted(set(matches["District"])),
-            "neighborhood": sorted(set(matches["Neighborhood"])),
-        }
-
-    def _find_matches(self, raw_street_address: str) -> pd.DataFrame:
-        """
-        Given the loaded data and the input address, finds rows that match.
-        If the street_type doesn't exist for a given street, we'll fall back
-        to all street types for that street.
-        """
-        data = self._data
-        try:
-            street_address = parse_street_address(raw_street_address)
-        except ValueError:
-            return pd.DataFrame(columns=data.columns)
-        street_data = data[
-            (data["StreetName"] == street_address.name)
-            & (data["StreetType"] == street_address.type)
-        ]
-        if street_data.empty:
-            street_data = data[data["StreetName"] == street_address.name]
-        return street_data[
-            (street_data["SideCode"].isin([street_address.side_code, "A"]))
-            & (street_data["HouseNumLo"] <= street_address.number)
-            & (street_data["HouseNumHi"] >= street_address.number)
-        ]
-
-
-_db: Final = StreetDatabase(
-    os.path.join(os.path.dirname(__file__), "data/neighborhood_data.tsv")
-)
-
-find = _db.find
+def find(raw_street_address: str) -> Dict[str, List[Any]]:
+    """
+    Given the loaded data and the input address, finds rows that match.
+    If the street_type doesn't exist for a given street, we'll fall back
+    to all street types for that street.
+    """
+    try:
+        street_address = parse_street_address(raw_street_address)
+    except ValueError:
+        return {"district": [], "neighborhood": []}
+    name_restrict = _data["StreetName"] == street_address.name
+    type_restrict = _data["StreetType"] == street_address.type
+    street_data = _data[name_restrict & type_restrict]
+    if street_data.empty:
+        street_data = _data[name_restrict]
+    matches = street_data[
+        (street_data["SideCode"].isin([street_address.side_code, "A"]))
+        & (street_data["HouseNumLo"] <= street_address.number)
+        & (street_data["HouseNumHi"] >= street_address.number)
+    ]
+    return {
+        "district": sorted(set(matches["District"])),
+        "neighborhood": sorted(set(matches["Neighborhood"])),
+    }
